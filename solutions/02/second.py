@@ -50,12 +50,34 @@ def compute(data):
                 return True
             else:
                 return False
+
+        if check_row_safe(row):
+            safe_count += 1
+            continue
+
+        good1 = False
+        good2 = False
+        for j in range(len(row)-1):
+            if 1<= row[j+1] - row[j] <= 3:
+                continue
+            else:
+                if check_row_safe(row[:j] + row[j+1:]) or check_row_safe(row[:j+1] + row[j+2:]):
+                    good1 = True
+                    break
         
-        for j in range(len(row)):
-            if check_row_safe(row[:j] + row[j+1:]):
-                safe_count += 1
-                break
+        row = list(reversed(row))
+
+        for j in range(len(row)-1):
+            if 1<= row[j+1] - row[j] <= 3:
+                continue
+            else:
+                if check_row_safe(row[:j] + row[j+1:]) or check_row_safe(row[:j+1] + row[j+2:]):
+                    good2 = True
+                    break
         
+        if good1 or good2:
+            safe_count += 1
+            
     return safe_count
 
 INPUT_S = '''\
