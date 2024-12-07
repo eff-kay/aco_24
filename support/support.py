@@ -118,6 +118,7 @@ def submit_solution() -> int:
         error_match = error_regex.search(contents)
         if error_match:
             print(f'\033[41m{error_match[0]}\033[m')
+            print(contents)
             return 1
 
     if RIGHT in contents:
