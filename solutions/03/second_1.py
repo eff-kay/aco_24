@@ -7,25 +7,27 @@ import re
 INPUT_TXT = os.path.join(os.path.dirname(__file__), 'input.txt')
 
 def compute(data):
-    inp = data
-    matches = re.findall(r'mul\(\d+,\d+\)', inp, re.MULTILINE|re.DOTALL)
-    define_mul = 'def mul(a,b): return a*b'
-    context = {}
-    exec(define_mul, context)
-    ret = 0
-    for match in matches:
-        match = 'val = '+match
-        exec(match, context)
-        val = context['val']
-        ret+=val
+    enable_mul = True
+    run_sum = 0
+    for i,_ in enumerate(data):
+        if data[i:i+len('do()')] == 'do()':
+            enable_mul = True
+        
+        elif data[i:i+len("don't()")] == "don't()":
+            enable_mul = False
+        
+        elif enable_mul:
+            prod = re.match(r'mul\((\d+),(\d+)\)', data[i:])
+            if prod:
+                run_sum += int(prod.group(1))*int(prod.group(2))
 
-    return ret
+    return run_sum 
 
 INPUT_S = '''\
-xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))
+xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))
 '''
 
-EXPECTED = 161
+EXPECTED = 48
 
 @pytest.mark.parametrize(
     ('input_s', 'expected'),
