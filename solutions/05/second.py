@@ -15,6 +15,54 @@ def compute(data):
     orders  = [list(map(int, x.split('|'))) for x in orders.split('\n')]
     updates = [list(map(int, x.split(','))) for x in updates.split('\n')[:-1]]
 
+    def fetch_befores(number):
+        befores = []
+        for order in orders:
+            if order[1] == number:
+                befores.append(order[0])
+        
+        return befores
+
+    def fetch_afters(number):
+        afters = []
+        for order in orders:
+            if order[0] == number:
+                afters.append(order[1])
+        
+        return afters
+
+    invalid_order = []
+    for update in updates:
+        valid = True
+        for i, page in enumerate(update):
+            befores = fetch_befores(page) 
+            afters = fetch_afters(page)
+
+            rest = update[i+1:]
+            for r in rest:
+                if r in befores:
+                    valid = False
+                    # this should appear before page
+                    break
+                    
+            if not valid:
+                break
+                
+            prev = updates[:i]
+
+            for p in prev:
+                if p in afters:
+                    valid = False
+                    # this should appear after page
+                    break
+            
+            if not valid:
+                break
+
+        if not valid:
+            invalid_order.append(update)
+
+
     # create a grid of before and afters based on the oder
     grid = {}
     for order in orders:
@@ -38,7 +86,6 @@ def compute(data):
 
         list_ordered_pages.append(ordered_pages)
 
-    print(list_ordered_pages)
     result = sum([valid[len(valid)//2] for valid in list_ordered_pages])
     return result
 
