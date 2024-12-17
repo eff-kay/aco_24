@@ -3,14 +3,16 @@ import argparse
 import os.path
 import re
 
+from support import timing
+
 # increase recusion limit
 import sys
 sys.setrecursionlimit(100000000)
 INPUT_TXT = os.path.join(os.path.dirname(__file__), 'input.txt')
 
+@timing()
 def compute(data):
     inp = data.split('\n')[:-1]
-
 
     print(len(inp), len(inp[0])) 
 
@@ -41,7 +43,8 @@ def compute(data):
             if y == "^":
                 g_pos = (i, j)
                 break
-        
+
+
     print(g_pos, 'g_pos')
 
 
@@ -69,7 +72,7 @@ def compute(data):
 
 
         # print('cache', pos, dir)
-        seen_cache.append((pos[0], pos[1], dir))        
+        seen_cache.add((pos[0], pos[1], dir))        
 
         if new_pos[0]>=len(board) or new_pos[0]<0 or new_pos[1]>=len(board[0]) or new_pos[1]<0:
             return None
@@ -87,44 +90,58 @@ def compute(data):
 
     for i, x in enumerate(inp):
         for j,y in enumerate(x):
-            board = [list(x) for x in inp]
             new_obs = (i, j)
-            print(i,j, result)
-            loop = traverse(new_obs, g_pos, board, seen_cache=list(), dir="^")
+            loop = traverse(new_obs, g_pos, inp, seen_cache=set(), dir="^")
 
             if loop and loop[0]:
                 result+=1
 
-    # result = 0
-    # for i in range(len(inp)):
-    #     for j in range(len(inp[0])):
-    #         r, c = g_pos[0], g_pos[1]
-    #         dir = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    #         d = 0
 
-    #         seen_cache = set() 
-    #         while True:
-    #             if (r,c,d) in seen_cache:
-    #                 result+=1
-    #                 break
+    return result
 
-    #             seen_cache.add((r,c,d))
 
-    #             dr, dc = dir[d]
+@timing()
+def compute_bfs(data):
+    inp = data.split('\n')[:-1]
 
-    #             rr = r + dr
-    #             cc = c + dc
+    print(len(inp), len(inp[0])) 
 
-    #             if not (0 <= rr < len(inp) and 0 <= cc < len(inp[0])):
-    #                 break
+    for i, x in enumerate(inp):
+        for j, y in enumerate(x):
+            if y == "^":
+                g_pos = (i, j)
+                break
+        
+    print(g_pos, 'g_pos')
 
-    #             if inp[rr][cc] == '#' or rr==i and cc==j:
-    #                 d = (d+1)%4
-    #             else:
-    #                 r = rr
-    #                 c = cc
+    result = 0
+    for i in range(len(inp)):
+        for j in range(len(inp[0])):
+            r, c = g_pos[0], g_pos[1]
+            dir = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+            d = 0
 
-    print(result)
+            seen_cache = set() 
+            while True:
+                if (r,c,d) in seen_cache:
+                    result+=1
+                    break
+
+                seen_cache.add((r,c,d))
+
+                dr, dc = dir[d]
+
+                rr = r + dr
+                cc = c + dc
+
+                if not (0 <= rr < len(inp) and 0 <= cc < len(inp[0])):
+                    break
+
+                if inp[rr][cc] == '#' or rr==i and cc==j:
+                    d = (d+1)%4
+                else:
+                    r = rr
+                    c = cc
 
     return result
 
@@ -151,11 +168,16 @@ EXPECTED = 6
 )
 def test(input_s: str, expected: int) -> None:
     assert compute(input_s) == expected
+    assert compute_bfs(input_s) == expected
+
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('data_file', nargs='?', default=INPUT_TXT)
     args = parser.parse_args()
+
+    with open(args.data_file) as f:
+        print(compute_bfs(f.read()))
 
     with open(args.data_file) as f:
         print(compute(f.read()))
